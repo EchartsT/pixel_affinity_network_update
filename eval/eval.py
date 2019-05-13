@@ -7,6 +7,7 @@ import os
 import time
 import cv2
 from EvalSPModule import *
+import numpy as np
 
 gtseg_dir = '../data/groundtruth'
 label_dir = '../data/output/500'

@@ -65,18 +65,38 @@ def main():
     output = Parallel(n_jobs=num_cores)(delayed(evaluate)(os.path.join(label_root_dir, str(nC))) for nC in nC_list)
 
     for i in range(0, len(nC_list)):
-        asa_list.append(output[i][0])
-        br_list.append(output[i][1])
+        asa_list.append(100 * output[i][0])
+        br_list.append(100 * output[i][1])
 
+    
+    # scatter plot
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.plot(nC_list, asa_list)
+    plt.scatter(nC_list, asa_list)
+    plt.xlim(100, 600)
+    plt.ylim(90, 100)
+    plt.xlabel('superpixels num')
+    plt.ylabel('ASA')
+
+    plt.figure()
+    plt.plot(nC_list, br_list)
+    plt.scatter(nC_list, br_list)
+    plt.xlim(100, 600)
+    plt.ylim(50, 100)
+    plt.xlabel('superpixels num')
+    plt.ylabel('BR')
+    plt.show()
+            
     toc = time.time()
 
     print('ASA:')
     for i in range(0, len(nC_list)):
-        print(asa_list[i])
+        print('%d sp num: %f' % (nC_list[i], asa_list[i]))
 
     print('BR:')
     for i in range(0, len(nC_list)):
-        print(br_list[i])
+        print('%d sp num: %f' % (nC_list[i], br_list[i]))
 
     print('Elapsed time = %f sec.' % (toc - tic))
 

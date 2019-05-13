@@ -21,7 +21,7 @@ def main():
     nC_list = [100, 200, 300, 400, 500, 600]
 
     # the file list of test data
-    img_folder = './input'
+    img_folder = '../data/input'
     img_fullpath = []
     for filename in os.listdir(img_folder):
         if filename.endswith('.jpg'):
@@ -31,7 +31,7 @@ def main():
     img_fullpath.sort()
 
     # prepare output folders
-    imlog_dir = './output'
+    imlog_dir = '../data/output'
     if not os.path.exists(imlog_dir):
         os.makedirs(imlog_dir)
 
@@ -71,27 +71,33 @@ def main():
         edge = np.reshape(edge, [1, 1, h, w])
         input2 = torch.from_numpy(edge)
         inputs = torch.cat((input1, input2), 1)
+        print(inputs.data.cpu().numpy().shape)
         inputs = inputs.cuda(gpu_id, non_blocking=True)
 
         # inference
         out_x = model(inputs)
+        print('out_x shape: ', out_x.data.cpu().numpy().shape)
         inputs_t = torch.transpose(inputs, 2, 3)
         out_y_t = model(inputs_t)
         out_y = torch.transpose(out_y_t, 2, 3)
         outputs = torch.cat((out_x, out_y), 1)
+        print('outputs shape: ', outputs.data.cpu().numpy().shape)
 
         # compute superpixels
         affinity = outputs[0].data.cpu().numpy()
+        print('affinity shape: ', affinity.shape)
         affinity_list = affinity.flatten().tolist()
         output = np.zeros_like(image)
         for i, nC in enumerate(nC_list):
             print('    nC = %d' % nC)
             sp_list = ERSWgtOnly(affinity_list, h, w, nC, conn8, 0.5)
             sp_label = np.reshape(np.asarray(sp_list), (h, w), order='C')
+            print(sp_label.shape)
 
             # save labels as uint16 png files
             output_fullpath = os.path.join(label_dir[i], basename + '.png')
             cv2.imwrite(output_fullpath, np.uint16(sp_label))
+            #cv2.imwrite(output_fullpath, np.uint8(sp_label))
 
             # save superpixel contour
             np.copyto(output, image)
